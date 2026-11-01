@@ -1,0 +1,230 @@
+
+.risk-analysis-page {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.risk-intro {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 20px;
+  padding: 26px;
+  background: linear-gradient(120deg, #172b3b, #172038);
+  border: 1px solid #293d50;
+  border-radius: 14px;
+}
+
+.risk-intro h2 {
+  color: #f1f5f9;
+  font-size: 27px;
+  margin: 10px 0;
+}
+
+.risk-intro p:not(.eyebrow) {
+  color: #aab8cc;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.risk-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.risk-stat-card {
+  min-width: 0;
+  padding: 21px;
+  background: #151e2c;
+  border: 1px solid #293344;
+  border-radius: 12px;
+}
+
+.risk-stat-card p {
+  color: #a4b1c8;
+  font-size: 12px;
+}
+
+.risk-stat-card h3 {
+  color: #f1f5f9;
+  font-size: 27px;
+  margin: 13px 0 8px;
+}
+
+.risk-stat-card span {
+  color: #8593ad;
+  font-size: 11px;
+}
+
+.risk-analysis-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.5fr);
+  gap: 18px;
+}
+
+.overall-risk-panel,
+.category-risk-panel {
+  min-width: 0;
+}
+
+.risk-analysis-circle {
+  width: 165px;
+  height: 165px;
+  margin: 28px auto 18px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(closest-side, #11192b 78%, transparent 80%),
+    conic-gradient(#55e6c1 0% 86%, #29364b 86% 100%);
+}
+
+.risk-analysis-circle strong {
+  color: #f1f5f9;
+  font-size: 38px;
+}
+
+.risk-analysis-circle span {
+  color: #8593ad;
+  font-size: 12px;
+}
+
+.risk-analysis-label {
+  color: #65e6b4;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.risk-analysis-description {
+  max-width: 290px;
+  margin: 12px auto 0;
+  color: #91a0b5;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.7;
+}
+
+.risk-category-list {
+  display: flex;
+  flex-direction: column;
+  gap: 21px;
+}
+
+.risk-category-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #cbd5e1;
+  font-size: 12px;
+  margin-bottom: 10px;
+}
+
+.risk-category-heading strong {
+  color: #f1f5f9;
+}
+
+.risk-category-bar {
+  height: 8px;
+  background: #29364b;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.risk-category-bar div {
+  height: 100%;
+  border-radius: 10px;
+  background: #55e6c1;
+}
+
+.risk-level {
+  display: inline-block;
+  padding: 5px 9px;
+  border-radius: 5px;
+  font-size: 10px;
+}
+
+.risk-level.high {
+  background: #48252e;
+  color: #ff9ba7;
+}
+
+.risk-level.medium {
+  background: #423b25;
+  color: #ead18a;
+}
+
+.risk-level.low {
+  background: #19382f;
+  color: #65e6b4;
+}
+
+.vehicle-risk-panel,
+.recommendations-panel {
+  min-width: 0;
+}
+
+.recommendation-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.recommendation-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 15px 5px;
+  border-bottom: 1px solid #293344;
+}
+
+.recommendation-item:last-child {
+  border-bottom: none;
+}
+
+.recommendation-number {
+  display: grid;
+  place-items: center;
+  min-width: 35px;
+  height: 35px;
+  border-radius: 8px;
+  color: #60a5fa;
+  background: #1d3048;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.recommendation-item p {
+  color: #cbd5e1;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.risk-disclaimer {
+  color: #91a0b5;
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+@media (max-width: 1050px) {
+  .risk-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .risk-analysis-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .risk-stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .risk-intro {
+    padding: 18px;
+  }
+}
