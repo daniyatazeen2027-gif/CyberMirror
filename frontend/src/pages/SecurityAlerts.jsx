@@ -1,60 +1,83 @@
-
+import { useCallback, useEffect, useState } from 'react';
+import { getAlerts } from '../services/api';
 import './SecurityAlerts.css';
 
-const alertStats = [
-  { label: 'Total Alerts', value: '18', note: 'Demo alert records' },
-  { label: 'Critical Alerts', value: '03', note: 'Priority review' },
-  { label: 'High Alerts', value: '05', note: 'Requires attention' },
-  { label: 'Resolved Alerts', value: '10', note: 'Demo resolved records' },
-];
+function formatSeverity(severity = '') {
+  return severity.charAt(0).toUpperCase() + severity.slice(1).toLowerCase();
+}
 
-const securityAlerts = [
-  {
-    id: 'ALT-001',
-    title: 'ECU Authentication Failure',
-    vehicle: 'CM-008',
-    severity: 'Critical',
-    time: '09:36 AM',
-    status: 'Under Review',
-  },
-  {
-    id: 'ALT-002',
-    title: 'Unusual CAN Bus Traffic',
-    vehicle: 'CM-001',
-    severity: 'High',
-    time: '09:42 AM',
-    status: 'Open',
-  },
-  {
-    id: 'ALT-003',
-    title: 'Gateway Connection Anomaly',
-    vehicle: 'CM-014',
-    severity: 'Medium',
-    time: '09:21 AM',
-    status: 'Investigating',
-  },
-  {
-    id: 'ALT-004',
-    title: 'Unusual Network Activity',
-    vehicle: 'CM-003',
-    severity: 'Low',
-    time: '09:15 AM',
-    status: 'Resolved',
-  },
-  {
-    id: 'ALT-005',
-    title: 'Vehicle Communication Warning',
-    vehicle: 'CM-005',
-    severity: 'High',
-    time: '08:58 AM',
-    status: 'Open',
-  },
-];
+function formatStatus(status = '') {
+  return status
+    .replace(/[_-]/g, ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function formatTime(timestamp) {
+  if (!timestamp) return '—';
+
+  const date = new Date(timestamp);
+
+  if (Number.isNaN(date.getTime())) return '—';
+
+  return date.toLocaleString('en-IN', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+}
 
 function SecurityAlerts() {
+  const [alerts, setAlerts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+
+  const loadAlerts = useCallback(async () => {
+    setLoading(true);
+    setError('');
+
+    try {
+      const data = await getAlerts();
+      setAlerts(data);
+    } catch (err) {
+      setError(err.message || 'Could not load security alerts.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    loadAlerts();
+  }, [loadAlerts]);
+
+  const alertStats = [
+    {
+      label: 'Total Alerts',
+      value: alerts.length,
+      note: 'Records from PostgreSQL',
+    },
+    {
+      label: 'Critical Alerts',
+      value: alerts.filter((alert) => alert.severity === 'critical').length,
+      note: 'Priority review',
+    },
+    {
+      label: 'High Alerts',
+      value: alerts.filter((alert) => alert.severity === 'high').length,
+      note: 'Requires attention',
+    },
+    {
+      label: 'Resolved Alerts',
+      value: alerts.filter(
+        (alert) => alert.status?.toLowerCase() === 'resolved'
+      ).length,
+      note: 'Resolved records',
+    },
+  ];
+
   return (
     <div className="security-alerts-page">
-
       <section className="alerts-intro">
         <div>
           <p className="eyebrow">VEHICLE SECURITY / ALERT MANAGEMENT</p>
@@ -65,14 +88,14 @@ function SecurityAlerts() {
           </p>
         </div>
 
-        <span className="tag">DEMO ALERT CENTER</span>
+        <span className="tag">DATABASE ALERTS</span>
       </section>
 
       <section className="alert-stats-grid">
         {alertStats.map((stat) => (
           <article className="alert-stat-card" key={stat.label}>
             <p>{stat.label}</p>
-            <h3>{stat.value}</h3>
+            <h3>{loading ? '—' : stat.value}</h3>
             <span>{stat.note}</span>
           </article>
         ))}
@@ -82,53 +105,81 @@ function SecurityAlerts() {
         <div className="panel-heading">
           <div>
             <h3>Security Alert Records</h3>
-            <p>Illustrative alerts from the demo vehicle fleet</p>
+            <p>Live records retrieved from the CyberMirror backend</p>
           </div>
-          <span className="tag">MOCK DATA</span>
+          <button type="button" onClick={loadAlerts} disabled={loading}>
+            {loading ? 'Loading...' : 'Refresh'}
+          </button>
         </div>
 
-        <div className="table-wrapper">
-          <table>
-            <thead>
-              <tr>
-                <th>ALERT ID</th>
-                <th>ALERT DESCRIPTION</th>
-                <th>VEHICLE</th>
-                <th>SEVERITY</th>
-                <th>TIME</th>
-                <th>STATUS</th>
-              </tr>
-            </thead>
+        {loading && (
+          <p className="alerts-disclaimer">Loading security alerts...</p>
+        )}
 
-            <tbody>
-              {securityAlerts.map((alert) => (
-                <tr key={alert.id}>
-                  <td>{alert.id}</td>
-                  <td>{alert.title}</td>
-                  <td>{alert.vehicle}</td>
-                  <td>
-                    <span className={`severity ${alert.severity.toLowerCase()}`}>
-                      {alert.severity}
-                    </span>
-                  </td>
-                  <td>{alert.time}</td>
-                  <td>
-                    <span className={`alert-status ${alert.status.toLowerCase().replace(' ', '-')}`}>
-                      {alert.status}
-                    </span>
-                  </td>
+        {error && (
+          <div className="alerts-disclaimer" role="alert">
+            <p>Unable to load alerts: {error}</p>
+            <p>Check that FastAPI and PostgreSQL are running, then try again.</p>
+          </div>
+        )}
+
+        {!loading && !error && (
+          <div className="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>ALERT ID</th>
+                  <th>ALERT DESCRIPTION</th>
+                  <th>VEHICLE / ECU</th>
+                  <th>SEVERITY</th>
+                  <th>TIME</th>
+                  <th>STATUS</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+
+              <tbody>
+                {alerts.map((alert) => {
+                  const severity = formatSeverity(alert.severity);
+                  const status = formatStatus(alert.status);
+
+                  return (
+                    <tr key={alert.alert_id}>
+                      <td>{alert.alert_id}</td>
+                      <td>{alert.description || alert.attack_type}</td>
+                      <td>{alert.ecu_id}</td>
+                      <td>
+                        <span className={`severity ${severity.toLowerCase()}`}>
+                          {severity}
+                        </span>
+                      </td>
+                      <td>{formatTime(alert.timestamp)}</td>
+                      <td>
+                        <span
+                          className={`alert-status ${alert.status
+                            ?.toLowerCase()
+                            .replace(/[_\s]+/g, '-')}`}
+                        >
+                          {status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+
+                {alerts.length === 0 && (
+                  <tr>
+                    <td colSpan="6">No security alerts found.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
       </section>
 
       <p className="alerts-disclaimer">
-        Demo environment: All alert records, timestamps and statuses
-        are illustrative placeholder data.
+        Alert records are retrieved from the CyberMirror backend and PostgreSQL database.
       </p>
-
     </div>
   );
 }
