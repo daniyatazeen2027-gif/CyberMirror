@@ -37,3 +37,5 @@ frontend/dist/
 # Operating system files
 .DS_Store
 Thumbs.db
+# Generated ML inference results
+ml/datasets/processed/inference_results.csv

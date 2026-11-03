@@ -275,4 +275,65 @@ Pending:
 \- Integration with the backend alert and risk analysis workflow
 
 
+## 9. ML Inference Pipeline
+
+CyberMirror supports inference using the previously trained Isolation Forest model.
+
+The inference workflow:
+
+1. Loads the saved Isolation Forest model.
+2. Loads the previously fitted StandardScaler.
+3. Validates incoming CAN traffic CSV data.
+4. Applies the existing preprocessing pipeline.
+5. Generates anomaly predictions and decision scores.
+6. Preserves ECU and CAN ID information.
+7. Exports the prediction results to a CSV file.
+
+### Running Inference
+
+Run from the project root:
+
+```bash
+python -m ml.models.run_inference
+```
+
+To use a different input dataset:
+
+```python
+from ml.models.run_inference import run_inference
+
+results = run_inference(
+    "ml/datasets/raw/sample_can_traffic.csv"
+)
+```
+
+### Prediction Output
+
+| Column | Description |
+|---|---|
+| prediction | 1 = Normal, -1 = Anomaly |
+| anomaly_score | Isolation Forest decision score |
+| is_anomaly | Boolean anomaly indicator |
+| traffic_status | Normal or Anomaly |
+
+Lower decision scores indicate more anomalous observations. These scores are not probabilities.
+
+The output is saved to:
+
+`ml/datasets/processed/inference_results.csv`
+
+The generated output file is excluded from Git tracking.
+
+### Inference Testing
+
+The inference pipeline was tested with:
+
+- 40 synthetic training-dataset records.
+- 3 separate sample-dataset records.
+- Prediction-label consistency checks.
+- Anomaly-score validity checks.
+- Output CSV verification.
+
+These tests confirm pipeline execution, not real-world detection accuracy.
+
 
