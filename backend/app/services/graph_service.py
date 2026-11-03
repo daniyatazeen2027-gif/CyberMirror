@@ -1,4 +1,3 @@
-
 from app.database.neo4j_db import driver, NEO4J_DATABASE
 
 
@@ -43,3 +42,55 @@ def get_threats_for_ecu(ecu_id: str):
     ) as session:
         result = session.run(query, ecu_id=ecu_id)
         return [record["attack_type"] for record in result]
+
+
+def set_ecu_criticality(ecu_id: str, criticality: int):
+    """
+    Store the criticality score for an ECU.
+    Criticality must be an integer between 0 and 100.
+    """
+
+    if not isinstance(criticality, int) or isinstance(criticality, bool):
+        raise TypeError("ECU criticality must be an integer")
+
+    if not 0 <= criticality <= 100:
+        raise ValueError("ECU criticality must be between 0 and 100")
+
+    query = """
+    MERGE (ecu:ECU {ecu_id: $ecu_id})
+    SET ecu.criticality = $criticality
+    RETURN ecu.ecu_id AS ecu_id,
+           ecu.criticality AS criticality
+    """
+
+    with driver.session(database=NEO4J_DATABASE) as session:
+        result = session.run(
+            query,
+            ecu_id=ecu_id,
+            criticality=criticality
+        )
+        return result.single().data()
+
+
+def get_ecu_criticality(ecu_id: str):
+    """
+    Retrieve the criticality score of an ECU from Neo4j.
+    """
+
+    query = """
+    MATCH (ecu:ECU {ecu_id: $ecu_id})
+    RETURN ecu.ecu_id AS ecu_id,
+           ecu.criticality AS criticality
+    """
+
+    with driver.session(
+        database=NEO4J_DATABASE,
+        default_access_mode="READ"
+    ) as session:
+        result = session.run(query, ecu_id=ecu_id)
+        record = result.single()
+
+        if record is None:
+            return None
+
+        return record.data()
